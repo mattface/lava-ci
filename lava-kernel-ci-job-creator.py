@@ -87,7 +87,7 @@ def create_jobs(base_url, kernel, plans, platform_list, targets, priority):
                 else:
                     for template in device_templates:
                         job_name = tree + '-' + kernel_version + '-' + defconfig[:100] + '-' + platform_name + '-' + device_type + '-' + plan
-                        job_json = directory + '/' + job_name + '.json'
+                        job_json = directory + '/' + plan + '/' + job_name + '.json'
                         template_file = cwd + '/templates/' + plan + '/' + str(template)
                         if os.path.exists(template_file):
                             with open(job_json, 'wt') as fout:
@@ -143,7 +143,7 @@ def create_jobs(base_url, kernel, plans, platform_list, targets, priority):
                                         else:
                                             tmp = tmp.replace('{priority}', 'high')
                                         fout.write(tmp)
-                            print 'JSON Job created: jobs/%s' % job_name
+                            print 'JSON Job created: jobs/%s/%s' % (plan, job_name)
 
 
 def walk_url(url, plans=None, arch=None, targets=None, priority=None):
@@ -228,10 +228,11 @@ def walk_url(url, plans=None, arch=None, targets=None, priority=None):
 def main(args):
     global directory
     config = configuration.get_config(args)
+    plans = config.get("plans")
     if config.get("jobs"):
-        directory = setup_job_dir(config.get("jobs"))
+        directory = setup_job_dir(config.get("jobs"), plans)
     else:
-        directory = setup_job_dir(os.getcwd() + '/jobs')
+        directory = setup_job_dir(os.getcwd() + '/jobs', plans)
     print 'Scanning %s for kernel information...' % config.get("url")
     walk_url(config.get("url"), config.get("plans"), config.get("arch"), config.get("targets"), config.get("priority"))
     print 'Done scanning for kernel information'

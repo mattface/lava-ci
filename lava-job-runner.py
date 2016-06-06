@@ -194,10 +194,16 @@ def submit_jobs(connection, server, bundle_stream=None):
             continue
 
 
-def load_jobs(top):
-    for root, dirnames, filenames in os.walk(top):
-        for filename in fnmatch.filter(filenames, '*.json'):
-            job_map[os.path.join(root, filename)] = None
+def load_jobs(top, plans):
+    if plans:
+        for plan in plans:
+            for root, dirnames, filenames in os.walk(top + '/' + plan):
+                for filename in fnmatch.filter(filenames, '*.json'):
+                    job_map[os.path.join(root, filename)] = None
+    else:
+        for root, dirnames, filenames in os.walk(top):
+            for filename in fnmatch.filter(filenames, '*.json'):
+                job_map[os.path.join(root, filename)] = None
 
 
 def retrieve_jobs(jobs):
@@ -257,11 +263,12 @@ def main(args):
     if config.get("repo"):
         retrieve_jobs(config.get("repo"))
 
+    plans = config.get("plans")
     if config.get("jobs"):
-        load_jobs(config.get("jobs"))
+        load_jobs(config.get("jobs"), plans)
         print "Loading jobs from top folder " + str(config.get("jobs"))
     else:
-        load_jobs(os.getcwd())
+        load_jobs(os.getcwd() + '/jobs', plans)
 
     start_time = time.time()
 
@@ -301,5 +308,6 @@ if __name__ == '__main__':
     parser.add_argument("--poll", help="poll the submitted LAVA jobs, dumps info into specified json")
     parser.add_argument("--timeout", type=int, default=-1, help="polling timeout in seconds. default is -1.")
     parser.add_argument('--bisect', help="bisection mode, returns 1 on any job failures", action='store_true')
+    parser.add_argument("--plans", nargs='+', help="test plan to create jobs for")
     args = vars(parser.parse_args())
     main(args)

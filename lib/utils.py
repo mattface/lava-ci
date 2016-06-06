@@ -7,13 +7,17 @@ import json
 import ssl
 
 
-def setup_job_dir(arg):
+def setup_job_dir(arg, subs=[]):
     print 'Setting up job output directory at: ' + str(arg)
     if not os.path.exists(arg):
         os.makedirs(arg)
+        for sub in subs:
+            os.makedirs(arg + "/" + sub)
     else:
         shutil.rmtree(arg)
         os.makedirs(arg)
+        for sub in subs:
+            os.makedirs(arg + "/" + sub)
     directory = arg
     print 'Done setting up job output directory'
     return directory
